@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict 
 class Settings(BaseSettings):
     model_config= SettingsConfigDict(env_file=".env", extra="ignore")
@@ -15,7 +16,7 @@ class Settings(BaseSettings):
     max_pages: int =12
     pdf_dpi: int =150
     max_image_side: int =1280
-    temp_dir: str ="tmp"
+    output_dir: Path = Path("storage/outputs")
     allowed_types: tuple[str, ...] = ("application/pdf", "image/png", "image/jpeg")
 
     @property
