@@ -12,7 +12,6 @@ class OllamaClient:
     def __init__(self,settings: Settings):
         self.model = settings.ollama_model
         self.temperature = settings.ollama_temperature
-        self.num_gpu = settings.num_gpu
         self.default_prompt = settings.ocr_prompt
         self.url = settings.ollama_url
         self.client = Client(host=settings.ollama_url, timeout=settings.ollama_timeout)
@@ -32,8 +31,6 @@ class OllamaClient:
 
     def ocr_image(self, image_bytes: bytes, prompt: str | None = None) -> str:
         options = {"temperature": self.temperature}
-        if self.num_gpu is not None:
-            options["num_gpu"] = self.num_gpu
         try:
             response = self.client.chat(
                 model=self.model,
