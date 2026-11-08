@@ -27,6 +27,7 @@ class OCRController:
 
         pages = []
         for i, image in enumerate(images, start=1):
+            logger.info("job %s: page %d/%d sent to model...", job_id, i, len(images))
             page_start = time.perf_counter()
             text = clean_markdown(self.ocr_model.ocr_image(image))
             pages.append(PageResult(page=i, text=text))

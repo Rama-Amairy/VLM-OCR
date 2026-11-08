@@ -7,9 +7,9 @@ class Settings(BaseSettings):
 
     ollama_url:str= "http://localhost:11434"
     ollama_model: str = "glm-ocr"
-    ollama_timeout: int =300
+    ollama_timeout: int =500
     ollama_temperature: float = 0.0
-    num_gpu: int = 0
+    num_gpu: int | None = None  # None = let Ollama decide; 0 = CPU only
     ocr_prompt:str="Text Recognition:"
 
     max_file_size_mb: int =20

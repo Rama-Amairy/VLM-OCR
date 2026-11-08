@@ -31,6 +31,9 @@ class OllamaClient:
         return True
 
     def ocr_image(self, image_bytes: bytes, prompt: str | None = None) -> str:
+        options = {"temperature": self.temperature}
+        if self.num_gpu is not None:
+            options["num_gpu"] = self.num_gpu
         try:
             response = self.client.chat(
                 model=self.model,
@@ -39,7 +42,7 @@ class OllamaClient:
                     "content": prompt or self.default_prompt,
                     "images": [image_bytes],
                 }],
-                options={"temperature": self.temperature, "num_gpu":self.num_gpu},
+                options=options,
             )
         except ResponseError as e:
             logger.error("ollama error: %s", e.error)
