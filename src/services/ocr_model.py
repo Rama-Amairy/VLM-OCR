@@ -14,6 +14,8 @@ class OllamaClient:
         self.temperature = settings.ollama_temperature
         self.default_prompt = settings.ocr_prompt
         self.url = settings.ollama_url
+        self.num_ctx = settings.ollama_num_ctx
+        self.keep_alive = settings.ollama_keep_alive
         self.client = Client(host=settings.ollama_url, timeout=settings.ollama_timeout)
 
     def check_model(self) -> bool:
@@ -29,8 +31,23 @@ class OllamaClient:
 
         return True
 
-    def ocr_image(self, image_bytes: bytes, prompt: str | None = None) -> str:
-        options = {"temperature": self.temperature}
+    def ocr_image(
+        self,
+        image_bytes: bytes,
+        prompt: str | None = None,
+        options: dict | None = None,
+    ) -> str:
+        # baseline request: only temperature; extra options are added only when set
+        request_options = {"temperature": self.temperature}
+        if self.num_ctx is not None:
+            request_options["num_ctx"] = self.num_ctx
+        if options:
+            request_options.update(options)
+
+        extra = {}
+        if self.keep_alive is not None:
+            extra["keep_alive"] = self.keep_alive
+
         try:
             response = self.client.chat(
                 model=self.model,
@@ -39,7 +56,8 @@ class OllamaClient:
                     "content": prompt or self.default_prompt,
                     "images": [image_bytes],
                 }],
-                options=options,
+                options=request_options,
+                **extra,
             )
         except ResponseError as e:
             logger.error("ollama error: %s", e.error)

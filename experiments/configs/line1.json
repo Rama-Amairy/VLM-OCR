@@ -1,0 +1,11 @@
+{
+  "name": "line1",
+  "description": "Starting configuration: dpi 100, longer generic prompt, no preprocessing",
+  "params": {
+    "pdf_dpi": 100,
+    "max_image_side": 1280,
+    "num_ctx": null,
+    "prompt": "Extract all the text from this CV image in Markdown, keeping the original order."
+  },
+  "preprocessing": []
+}

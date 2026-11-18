@@ -1,7 +1,5 @@
 from functools import lru_cache
 from pathlib import Path
-import secrets
-from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict 
 class Settings(BaseSettings):
     model_config= SettingsConfigDict(env_file=".env", extra="ignore")
@@ -12,14 +10,16 @@ class Settings(BaseSettings):
     ollama_timeout: int =1200
     ollama_temperature: float = 0.0
     ocr_prompt:str="Text Recognition:"
+    # optional, None = not sent to ollama (keeps the baseline request unchanged)
+    ollama_num_ctx: int | None = None
+    ollama_keep_alive: str | None = None  # e.g. "30m", keeps the model loaded on the GPU
 
     max_file_size_mb: int =20
     max_pages: int =12
-    pdf_dpi: int =150
+    pdf_dpi: int =100
     max_image_side: int =1280
     output_dir: Path = Path("storage/outputs")
     allowed_types: tuple[str, ...] = ("application/pdf", "image/png", "image/jpeg")
-    gemini_api_key: SecretStr 
     @property
     def max_file_size_bytes(self) -> int:
         return self.max_file_size_mb * 1024 * 1024
