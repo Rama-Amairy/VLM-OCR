@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     max_pages: int =12
     pdf_dpi: int =100
     max_image_side: int =1280
-    output_dir: Path = Path("storage/outputs")
+    output_dir: Path = Path("outputs")
     allowed_types: tuple[str, ...] = ("application/pdf", "image/png", "image/jpeg")
     @property
     def max_file_size_bytes(self) -> int:
