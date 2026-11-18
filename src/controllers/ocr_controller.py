@@ -13,23 +13,35 @@ logger = logging.getLogger(__name__)
 
 class OCRController:
     def __init__(self, settings: Settings, file_controller: FileController, ocr_model: OllamaClient):
+        self.settings = settings
         self.file_controller = file_controller
         self.ocr_model = ocr_model
         self.output_dir = settings.output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def process(self, data: bytes, filename: str) -> OCRResponse:
+    def process(self, data: bytes, filename: str, params: dict | None = None) -> OCRResponse:
+        """params (optional) override the defaults for this request only:
+        pdf_dpi, max_image_side, num_ctx, prompt, preprocessing (list of step names)."""
+        params = params or {}
         start = time.perf_counter()
         job_id = uuid.uuid4().hex[:12]
 
-        images = self.file_controller.to_images(data)
-        logger.info("job %s: %s, %d page(s)", job_id, filename, len(images))
+        file_controller = self.file_controller
+        image_params = {k: params[k] for k in ("pdf_dpi", "max_image_side") if params.get(k)}
+        if image_params:
+            file_controller = FileController(self.settings.model_copy(update=image_params))
+
+        prompt = params.get("prompt")
+        options = {"num_ctx": params["num_ctx"]} if params.get("num_ctx") else None
+
+        images = file_controller.to_images(data, params.get("preprocessing"))
+        logger.info("job %s: %s, %d page(s), params %s", job_id, filename, len(images), params or "default")
 
         pages = []
         for i, image in enumerate(images, start=1):
             logger.info("job %s: page %d/%d sent to model...", job_id, i, len(images))
             page_start = time.perf_counter()
-            text = clean_markdown(self.ocr_model.ocr_image(image))
+            text = clean_markdown(self.ocr_model.ocr_image(image, prompt=prompt, options=options))
             pages.append(PageResult(page=i, text=text))
             logger.info("job %s: page %d done in %.1fs", job_id, i, time.perf_counter() - page_start)
 

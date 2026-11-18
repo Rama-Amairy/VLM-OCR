@@ -2,6 +2,5 @@
   "name": "line3",
   "description": "line2_best + image preprocessing: each step alone, then the steps that improved CER combined into line3_best",
   "base": "line2_best",
-  "preprocessing": ["crop_margins", "deskew", "denoise", "contrast", "sharpen"],
-  "select_by": "cer"
+  "preprocessing": ["crop_margins", "deskew", "contrast"]
 }

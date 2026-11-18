@@ -5,6 +5,7 @@ import pymupdf as fitz #PyMuPDF for dealing with pdf files
 from PIL import Image 
 from src.config import Settings
 from src.exceptions import FileValidationError
+from src.preprocessing import apply_steps
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,8 @@ class FileController:
         if len(data) > self.max_size:
             raise FileValidationError(f"file is larger than {self.max_size_mb} MB")
         return self.detect_type(data)
-    def to_images(self, data: bytes) -> list[bytes]:
+    def to_images(self, data: bytes, steps: list[str] | None = None) -> list[bytes]:
+        """steps (optional): preprocessing steps applied to every page before it is resized."""
         file_type = self.file_validate(data)
 
         if file_type == "pdf":
@@ -41,7 +43,7 @@ class FileController:
             pages = [data]
 
         logger.info("file type %s, %d page(s)", file_type, len(pages))
-        return [self._resize(p) for p in pages]
+        return [self._resize(p, steps) for p in pages]
 
     def _pdf_to_images(self, data: bytes) -> list[bytes]:
         try:
@@ -61,7 +63,7 @@ class FileController:
 
             return [page.get_pixmap(dpi=self.dpi).tobytes("png") for page in doc]
 
-    def _resize(self, image_bytes: bytes) -> bytes:
+    def _resize(self, image_bytes: bytes, steps: list[str] | None = None) -> bytes:
         try:
             img = Image.open(io.BytesIO(image_bytes))
             img.load()
@@ -70,6 +72,9 @@ class FileController:
 
         if img.mode != "RGB":
             img = img.convert("RGB")
+
+        if steps:
+            img = apply_steps(img, steps)  # on the full size page, before shrinking
 
         img.thumbnail((self.max_side, self.max_side))
 

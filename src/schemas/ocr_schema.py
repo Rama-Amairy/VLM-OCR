@@ -13,4 +13,5 @@ class OCRResponse(BaseModel):
     markdown: str
     pages: list[PageResult]
     duration_seconds: float
+    params: dict = {} 
     
